@@ -8,18 +8,19 @@ app.use(cors());
 const uri = "mongodb+srv://ESCL:cnusoc100@cluster0.octm7po.mongodb.net/";
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
-app.get('/last-data', async (req, res) => {
+app.get('/last-data/:collectionName', async (req, res) => {
   try {
-    await client.connect(); // MongoDB에 연결
+    const { collectionName } = req.params;
 
+    await client.connect(); // MongoDB에 연결
     const db = client.db('SOH_pred');
-    const collection = db.collection('Hyundai_Kona1');
+    const collection = db.collection(collectionName);
 
     // 컬렉션에서 마지막 데이터 가져오기
-    const data = await collection.find({}).sort({ _id: -1 }).limit(1).toArray();
+    const lastData = await collection.find({}).sort({ _id: -1 }).limit(1).toArray();
 
-    if (data.length > 0) {
-      res.json(data);
+    if (lastData.length > 0) {
+      res.json(lastData[0]); // 마지막 데이터 전송
     } else {
       res.status(404).json({ 'error': '데이터를 찾을 수 없음' });
     }
